@@ -15,7 +15,7 @@ class User(db.Model, UserMixin, SerializerMixin):
     _password_hash = db.Column(db.String)
     # foreign keys
     # serialize
-    serialize_rules = ('-owner.user', )
+    serialize_rules = ( )
     # represent
     def __repr__(self):
         return f"<User(name:{self.username}, email:{self.email})>"
@@ -35,7 +35,7 @@ class User(db.Model, UserMixin, SerializerMixin):
     # auth
     @hybrid_property
     def password_hash(self):
-        return self._password_pash
+        return self._password_hash
         
     @password_hash.setter
     def password_hash(self, password):
