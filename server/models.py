@@ -51,7 +51,7 @@ class Owner(db.Model, SerializerMixin):
     # local columns
     first_name = db.Column(db.String, nullable=False)
     last_name = db.Column(db.String, nullable=False)
-    username = db.Column(db.String, unique=True)
+    # username = db.Column(db.String, unique=True)
     profile_url = db.Column(db.String)
     city = db.Column(db.String)
     bio = db.Column(db.String)

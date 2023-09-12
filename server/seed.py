@@ -69,7 +69,7 @@ def create_owners(users):
         'https://e1.pxfuel.com/desktop-wallpaper/617/339/desktop-wallpaper-simple-aesthetic-tumblr-aesthetic-profile.jpg'
     ]
     with app.app_context():
-        owners = [ Owner(bio=faker.sentence(), first_name=rc(first_names), last_name=rc(last_names), city=rc(cities), profile_url=rc(profile_urls), user_id=rc(range(len(users)+1))) for _ in range(8) ]
+        owners = [ Owner(bio=faker.sentence(), first_name=rc(first_names), last_name=rc(last_names), city=rc(cities), profile_url=rc(profile_urls), user_id=i+1) for i in range(6) ]
         db.session.add_all(owners)
         db.session.commit()
         return owners
@@ -91,7 +91,7 @@ def create_pets(strains):
 
 def create_adoptions(owners, pets, quantity=12):
     with app.app_context():
-        adoptions = [Adoption(owner_id=rc(range(len(owners)))+1, pet_id=rc(range(len(pets)))+1) for _ in range(quantity) ]
+        adoptions = [Adoption(owner_id=rc(range(len(owners))), pet_id=rc(range(len(pets)))) for _ in range(quantity) ]
         db.session.add_all(adoptions)
         db.session.commit()
         return adoptions
@@ -103,13 +103,21 @@ def create_actions(adoptions):
         db.session.add_all(actions)
         db.session.commit()
         return actions
-    
+
+
+def relate_users_and_owners(users, owners):
+    with app.app_context():
+        for user in users:
+            user.owner = Owner.query.filter_by(user_id=user.owner.id).first()
+        return users, owners
+ 
 if __name__ == '__main__':
     with app.app_context():
         delete_records()
         print("seeding...")
         users = seed_users()
         owners = create_owners(users)
+        # users, owners = relate_users_and_owners(users, owners)
         strains = seed_strains()
         pets = create_pets(strains)
         adoptions = create_adoptions(owners, pets)

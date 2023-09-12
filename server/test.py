@@ -5,7 +5,7 @@ from config import db, app, api, login_manager, Migrate
 from models import User, Owner, Pet, Adoption, Action, Stat, Strain
 import traceback
 
-class Users(Resource):
+class Users(Resource): # DONE
 	def get(self):
 		users = [u.to_dict() for u in User.query.all()]
 		return make_response(users, 200)
@@ -26,7 +26,7 @@ class Users(Resource):
 			except Exception as e:
 				return make_response({'error': str(e)}, 500)
 api.add_resource(Users, '/users')
-class UsersById(Resource):
+class UsersById(Resource): # DONE
 	def get(self, id):
 		user = User.query.filter_by(id=id).first()
 		if not user:
@@ -57,7 +57,7 @@ class UsersById(Resource):
 			except Exception as e:
 				return make_response({'error':str(e)}, 500)
 api.add_resource(UsersById, '/users/<int:id>')
-class UsersByUsername(Resource):
+class UsersByUsername(Resource): # DONE
 	def get(self, username):
 		user = User.query.filter_by(username=username).first()
 		if not user:
@@ -89,7 +89,7 @@ class UsersByUsername(Resource):
 				return make_response({'error': str(e)}, 500)
 api.add_resource(UsersByUsername, '/users/<string:username>')
 
-class Owners(Resource):
+class Owners(Resource): # DONE
 	def get(self):
 		owners = [o.to_dict() for o in Owner.query.all()]
 		return make_response(owners, 200)
@@ -113,7 +113,7 @@ class Owners(Resource):
 			except Exception as e:
 				return make_response({'error': str(e)}, 500)
 api.add_resource(Owners, '/owners')
-class OwnersById(Resource):
+class OwnersById(Resource): # DONE
 	def get(self, id):
 		owner = Owner.query.filter_by(id=id).first()
 		if not owner:
@@ -144,16 +144,19 @@ class OwnersById(Resource):
 			except Exception as e:
 				return make_response({'error': str(e)}, 500)
 api.add_resource(OwnersById, '/owners/<int:id>')
-# class OwnersByUserId(Resource):
-#     def get(self, user_id):
-#         owner = User.query.filter_by(id=user_id).first.owner
-#         if not owner:
-#             return make_response({'errror': 'owner not found'}, 404)
-#         else:
-#             return make_response(owner.to_dict(), 200)
-# api.add_resource(OwnersByUserId, '/owners/<string:username>')
+class OwnersByUsername(Resource): # DONE
+    def get(self, username):
+        user = User.query.filter_by(username=username).first()
+        owner= Owner.query.filter_by(user_id=user.id).first()
+        if not user:
+            return make_response({'errror': 'user not found'}, 404)
+        elif not owner:
+            return make_response({'error': 'owner not found'}, 404)
+        else:
+            return make_response(user.owner.to_dict(), 200)
+api.add_resource(OwnersByUsername, '/owners/<string:username>')
 
-class Pets(Resource):
+class Pets(Resource): # DONE
 	def get(self):
 		pets = [p.to_dict() for p in Pet.query.all()]
 		return make_response(pets, 200)
@@ -174,9 +177,9 @@ class Pets(Resource):
 			except Exception as e:
 				return make_response({'error': str(e)}, 500)
 api.add_resource(Pets, '/pets')
-class PetsById(Resource):
+class PetsById(Resource): # DONE
 	def get(self, id):
-		pet = pet.query.filter_by(id=id).first()
+		pet = Pet.query.filter_by(id=id).first()
 		if not pet:
 			return make_response({'error': 'pet not found'}, 404)
 		else:
@@ -205,8 +208,50 @@ class PetsById(Resource):
 			except Exception as e:
 				return make_response({'error': str(e)}, 500)
 api.add_resource(PetsById, '/pets/<int:id>')
+class PetsByUsername(Resource):
+    def get(self, username):
+        pass
+api.add_resource(PetsByUsername, '/owners/<string:username>/pets')
 
-class StrainsByName(Resource):
+class Strains(Resource): # DONE
+    def get(self):
+        strains = [s.to_dict() for s in Strain.query.all()]
+        return make_response(strains, 200)
+    def post(self):
+        pass
+api.add_resource(Strains, '/strains')
+class StrainsById(Resource): # DONE
+	def get(self, id):
+		strain = Strain.query.filter_by(id=id).first()
+		if not strain:
+			return make_response({'error': 'strain not found'}, 404)
+		else:
+			return make_response(strain.to_dict(), 200)
+	def delete(self, id):
+		strain = Strain.query.filter_by(id=id).first()
+		if not strain:
+			return make_response({'error': 'strain not found'}, 404)
+		else:
+			db.session.delete(strain)
+			db.session.commit()
+			return make_response({}, 204)
+	def patch(self, id):
+		strain = Strain.query.filter_by(id=id).first()
+		strainData = request.get_json()
+		if not strain:
+			return make_response({'error': 'strain not found'}, 404)
+		elif not strainData:
+			return make_response({'error': 'invalid strain data'}, 400)
+		else:
+			try:
+				for attr in strainData:
+					setattr(strain, attr, strainData[attr])
+				db.session.commit()
+				return make_response(strain.to_dict, 202)
+			except Exception as e:
+				return make_response({'error': str(e)}, 500)
+api.add_resource(StrainsById, '/strains/<int:id>')
+class StrainsByName(Resource): # DONE
 	def get(self, name):
 		strain = Strain.query.filter_by(name=name).first()
 		if not strain:
