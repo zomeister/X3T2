@@ -4,6 +4,68 @@ from flask_login import login_user, logout_user, login_required, current_user
 from config import db, app, api, login_manager, Migrate
 from models import User, Owner, Pet, Adoption, Action, Stat, Strain
 import traceback
+
+@app.route('/')
+def index():
+    return '<h1>Welcome to the Xeo Pets!</h1>'
+# -------- AUTH -------- () ---- #
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.filter_by(id=int(user_id)).first()
+class Signup(Resource):
+    def post(self):
+        userData = request.get_json()
+        if not userData:
+            return make_response({"error": "invalid user data"}, 400)
+        try:
+            new_user = User(
+                username=userData['username'],
+                email=userData['email'],
+            )
+            new_user.password_hash = userData['password']
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user, remember=True)
+            return make_response(new_user.to_dict(), 201)
+        except Exception as e:
+            return make_response({"error": str(e)}, 500)
+api.add_resource(Signup, '/signup')
+class Login(Resource):
+    def post(self):
+        userData = request.get_json()
+        if not userData:
+            return make_response({"error": "invalid user data"}, 400)
+        username = userData['username']
+        password = userData['password']
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return make_response({"error": "user not found"}, 404)
+        elif user.authenticate(password):
+            # login_user(new_user, remember=True)
+            session['user_id'] = user.id
+            return make_response(user.to_dict(rules=('-_password_hash',)), 200)
+        else:
+            return make_response({"error": "invalid username or password"}, 401)
+api.add_resource(Login, '/login')
+class Logout(Resource):
+    def delete(self):
+        try:
+            # logout_user()
+            session['user_id'] = None
+            return make_response({}, 204)
+        except Exception as e:
+            return {"error": str(e)}, 500
+api.add_resource(Logout, '/logout')
+class CheckSession(Resource):
+    def get(self):
+        user = User.query.filter_by(id=session['user_id']).first()
+        if not user:
+            return make_response({"error": "user not in session"}, 404)
+        else:
+            return make_response(user.to_dict(), 200)
+api.add_resource(CheckSession, '/check_session')
+
+# -------- GENERAL -------- () ---- #
 class Users(Resource): # DONE (get, post)
 	def get(self):
 		users = [u.to_dict() for u in User.query.all()]
