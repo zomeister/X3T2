@@ -69,8 +69,8 @@ def create_owners(users):
         'https://e1.pxfuel.com/desktop-wallpaper/617/339/desktop-wallpaper-simple-aesthetic-tumblr-aesthetic-profile.jpg'
     ]
     with app.app_context():
-        owners = [ Owner(bio=faker.sentence(), first_name=rc(first_names), last_name=rc(last_names), city=rc(cities), profile_url=rc(profile_urls), user_id=i+1) for i in range(6) ]
-        db.session.add_all(owners)
+        owners = [ Owner(bio=faker.sentence(), first_name=rc(first_names), last_name=rc(last_names), city=rc(cities), profile_url=rc(profile_urls), user_id=i+3) for i in range(6) ]
+        db.session.add_all(owners + owners)
         db.session.commit()
         return owners
 

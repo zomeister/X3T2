@@ -6,6 +6,13 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.associationproxy import association_proxy
 from config import db, bcrypt
 
+class Friendship(db.Model, SerializerMixin):
+    __tablename__ = 'friendships'
+    id = db.Column(db.Integer, primary_key=True)
+    req_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    rec_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    status = db.Column(db.String)
+    
 class User(db.Model, UserMixin, SerializerMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -20,7 +27,11 @@ class User(db.Model, UserMixin, SerializerMixin):
     def __repr__(self):
         return f"<User(name:{self.username}, email:{self.email})>"
     # relate
+    friend_reqs = db.relationship('Friendship', foreign_keys=[Friendship.req_user_id], backref='req_user', cascade='all, delete-orphan')
+    friend_recs = db.relationship('Friendship', foreign_keys=[Friendship.rec_user_id], backref='rec_user', cascade='all, delete-orphan')
     owner = db.relationship('Owner', back_populates='user')
+    req = association_proxy('friend_reqs', 'rec_user')
+    rec = association_proxy('friend_recs', 'req_user')
     # validate
     @validates('username')
     def validate_username(self, key, new_username):
@@ -44,7 +55,9 @@ class User(db.Model, UserMixin, SerializerMixin):
 
     def authenticate(self, password):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
- 
+
+    
+
 class Owner(db.Model, SerializerMixin):
     __tablename__ = 'owners'
     id = db.Column(db.Integer, primary_key=True)

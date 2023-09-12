@@ -65,35 +65,106 @@ class CheckSession(Resource):
             return make_response(user.to_dict(), 200)
 api.add_resource(CheckSession, '/check_session')
 
+class Shelter(Resource):
+    def get(self):
+        shelter_pets = [p.to_dict() for p in Pet.query.filter(Pet.adoptions==None).all()]
+        return make_response(shelter_pets, 200)
+    def post(self):
+        petData = request.get_json()
+        if not petData:
+            return make_response({'error': 'invalid pet data'}, 400)
+        try:
+            new_pet = Pet(
+                name=petData['name'],
+                factor=petData['factor'],
+                strain_id=petData['strain_id'],
+            )
+            db.session.add(new_pet)
+            db.session.commit()
+            return make_response(new_pet.to_dict(), 201)
+        except Exception as e:
+            return make_response({'error': str(e)}, 500)
+api.add_resource(Shelter, '/shelter')
+class MyPets(Resource):
+    def get(self, username):
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return make_response({"error": "user not found"}, 404)
+        else:
+            my_pets = [a.pet.to_dict() for a in Adoption.query.filter(Adoption.owner_id==user.id).all()]
+            return make_response(my_pets, 200)
+api.add_resource(MyPets, '/<string:username>/pets')
+class MyPetsById(Resource):
+    def get(self, id, username):
+        user = User.query.filter_by(username=username).first()
+        my_adoption = Adoption.query.filter((Adoption.owner_id==user.id) & (Adoption.pet_id==id)).first()
+        if not user:
+            return make_response({"error": "user not found"}, 404)
+        elif not my_adoption:
+            return make_response({"error": "adoption/pet not found"}, 404)
+        else:
+            return make_response(my_adoption.pet.to_dict(only=('adoptions.id', 'adoptions.actions', 'factor', 'strain', 'name', 'id', )), 200)
+api.add_resource(MyPetsById, '/<string:username>/pets/<int:id>')
+class MyPetsStats(Resource):
+    def get(self, username):
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return make_response({"error": "user not found"}, 404)
+        else:
+            my_petstats = [a.pet.stat.to_dict() for a in Adoption.query.filter(Adoption.owner_id==user.id).all()]
+            return make_response(my_petstats, 200)
+api.add_resource(MyPetsStats, '/<string:username>/pets_stats')
+class MyPetStats(Resource):
+    def get(self, id, username):
+        user = User.query.filter_by(username=username).first()
+        my_adoption = Adoption.query.filter((Adoption.owner_id==user.id) & (Adoption.pet_id==id)).first()
+        if not user:
+            return make_response({"error": "user not found"}, 404)
+        if not my_adoption:
+            return make_response({"error": "adoption not found"}, 404)
+        else:
+            return make_response(my_adoption.pet.stat.to_dict(), 200)
+    def patch(self, pet_id):
+        stat = Stat.query.filter_by(pet_id=pet_id).first()
+        statData = request.get_json()
+        if not stat:
+            return make_response({'error':'stat not found'}, 404)
+        elif not statData:
+            return make_response({'error': 'invalid stat data'}, 400)
+        else:
+            try:
+                for attr in statData:
+                    setattr(stat, attr, statData[attr])
+                db.session.commit()
+                return make_response(stat.to_dict(), 202)
+            except Exception as e:
+                return make_response({'error': str(e)}, 500)
+api.add_resource(MyPetStats, '/<string:username>/pets/<int:id>/stats')
+
+
+
+class MyAdoptions(Resource):
+    def get(self):
+        pass
+    def post(self):
+        pass
+api.add_resource(MyAdoptions, '/my_adoptions')
+class MyAdoptionsById(Resource):
+    def get(self, id):
+        pass
+    def delete(self, id):
+        pass
+    def patch(self, id):
+        pass
+api.add_resource(MyAdoptionsById, '/my_adoptions/<int:id>')
+
 # -------- GENERAL -------- () ---- #
-class Users(Resource): # DONE (get, post)
+class Users(Resource): # DONE (get)
 	def get(self):
 		users = [u.to_dict() for u in User.query.all()]
 		return make_response(users, 200)
-	def post(self):
-		userData = request.get_json()
-		if not userData:
-			return make_response({"error": "invalid user data"}, 400)
-		else:
-			try:
-				new_user = User(
-					username=userData['username'],
-					email=userData['email'],
-					password_hash=userData['password']
-				)
-				db.session.add(new_user)
-				db.session.commit()
-				return make_response(new_user.to_dict(), 201)
-			except Exception as e:
-				return make_response({'error': str(e)}, 500)
 api.add_resource(Users, '/users')
-class UsersById(Resource): # DONE (get, delete, patch)
-	def get(self, id):
-		user = User.query.filter_by(id=id).first()
-		if not user:
-			return make_response({"error": "user not found"}, 404)
-		else:
-			return make_response(user.to_dict(), 200)
+class UsersById(Resource): # DONE (delete, patch)
 	def delete(self, id):
 		user = User.query.filter_by(id=id).first()
 		if not user:
@@ -118,13 +189,7 @@ class UsersById(Resource): # DONE (get, delete, patch)
 			except Exception as e:
 				return make_response({'error':str(e)}, 500)
 api.add_resource(UsersById, '/users/<int:id>')
-class UsersByUsername(Resource): # DONE (get, delete, patch)
-	def get(self, username):
-		user = User.query.filter_by(username=username).first()
-		if not user:
-			return make_response({'error': 'user not found'}, 404)
-		else:
-			return make_response(user.to_dict(), 200)
+class UsersByUsername(Resource): # DONE (delete, patch)
 	def delete(self, username):
 		user = User.query.filter_by(username=username).first()
 		if not user:
@@ -218,26 +283,10 @@ class OwnersByUsername(Resource): # DONE (get)
                 return make_response({'error': str(e)}, 500)
 api.add_resource(OwnersByUsername, '/owners/<string:username>')
 
-class Pets(Resource): # DONE (get, post)
+class Pets(Resource): # DONE (get)
 	def get(self):
 		pets = [p.to_dict() for p in Pet.query.all()]
 		return make_response(pets, 200)
-	def post(self):
-		petData = request.get_json()
-		if not petData:
-			return make_response({'error': 'invalid pet data'}, 400)
-		else:
-			try:
-				new_pet = Pet(
-					name=petData['name'],
-					factor=petData['factor'],
-					strain_id=petData['strain_id'],
-				)
-				db.session.add(new_pet)
-				db.session.commit()
-				return make_response(new_pet.to_dict(), 201)
-			except Exception as e:
-				return make_response({'error': str(e)}, 500)
 api.add_resource(Pets, '/pets')
 class PetsById(Resource): # DONE (get, delete, patch)
 	def get(self, id):
@@ -270,21 +319,21 @@ class PetsById(Resource): # DONE (get, delete, patch)
 			except Exception as e:
 				return make_response({'error': str(e)}, 500)
 api.add_resource(PetsById, '/pets/<int:id>')
-class PetsByUsername(Resource): # DONE (get)
-    def get(self, username):
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return make_response({'error': 'user not found'}, 404)
-        else:
-            owner = Owner.query.filter_by(id=user.id).first()
-            try:
-                adoption_pets = [a.pet.to_dict() for a in Adoption.query.filter_by(owner_id=owner.id).all()]
-                return make_response(adoption_pets, 200)
-            except Exception as e:
-                return make_response({'error': str(e)}, 500)
-api.add_resource(PetsByUsername, '/<string:username>/pets')
+# class PetsByUsername(Resource): # DONE (get)
+#     def get(self, username):
+#         user = User.query.filter_by(username=username).first()
+#         if not user:
+#             return make_response({'error': 'user not found'}, 404)
+#         else:
+#             owner = Owner.query.filter_by(id=user.id).first()
+#             try:
+#                 adoption_pets = [a.pet.to_dict() for a in Adoption.query.filter_by(owner_id=owner.id).all()]
+#                 return make_response(adoption_pets, 200)
+#             except Exception as e:
+#                 return make_response({'error': str(e)}, 500)
+# api.add_resource(PetsByUsername, '/<string:username>/pets')
 
-class Stats(Resource):
+class Stats(Resource): # DONE (get, post)
 	def get(self):
 		stats = [s.to_dict() for s in Stat.query.all()]
 		return make_response(stats, 200)
@@ -306,13 +355,7 @@ class Stats(Resource):
 			except Exception as e:
 				return make_response({'error': str(e)}, 500)
 api.add_resource(Stats, '/stats')
-class StatsById(Resource): # DONE (get, delete, patch)
-    def get(self, id):
-        stat = Stat.query.filter_by(id=id).first()
-        if not stat:
-            return make_response({'error':'stat not found'}, 404)
-        else:
-            return make_response(stat.to_dict(), 200)
+class StatsById(Resource): # DONE (delete)
     def delete(self, id):
         stat = Stat.query.filter_by(id=id).first()
         if not stat:
@@ -321,21 +364,6 @@ class StatsById(Resource): # DONE (get, delete, patch)
             db.session.delete(stat)
             db.session.commit()
             return make_response({}, 204)
-    def patch(self, id):
-        stat = Stat.query.filter_by(id=id).first()
-        statData = request.get_json()
-        if not stat:
-            return make_response({'error':'stat not found'}, 404)
-        elif not statData:
-            return make_response({'error': 'invalid stat data'}, 400)
-        else:
-            try:
-                for attr in statData:
-                    setattr(stat, attr, statData[attr])
-                db.session.commit()
-                return make_response(stat.to_dict(), 202)
-            except Exception as e:
-                return make_response({'error': str(e)}, 500)
 api.add_resource(StatsById, '/stats/<int:id>')
 
 class Strains(Resource): # DONE (get, post)
