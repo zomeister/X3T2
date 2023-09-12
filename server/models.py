@@ -5,6 +5,7 @@ from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.associationproxy import association_proxy
 from config import db, bcrypt
+
 class Message(db.Model, SerializerMixin):
     __tablename__ ='messages'
     id = db.Column(db.Integer, primary_key=True)
@@ -12,12 +13,11 @@ class Message(db.Model, SerializerMixin):
     status = db.Column(db.String)
     friendship_id = db.Column(db.Integer, db.ForeignKey('friendships.id'))
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    reader_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     serialize_rules = ( )
     def __repr__(self):
         return f"<Message(status: {self.status}, message: {self.message})>"
-    author = db.relationship('User', back_populates='messages')
-    reader = db.relationship('User', back_populates='messages')
+    friendship = db.relationship('Friendship', back_populates='messages')
     
 class Friendship(db.Model, SerializerMixin):
     __tablename__ = 'friendships'
@@ -28,8 +28,7 @@ class Friendship(db.Model, SerializerMixin):
     serialize_rules = ( )
     def __repr__(self):
         return f"<Friendship()>"
-    out_messages = db.relationship('Message', foreign_keys=[Message.author_id], back_populates='author', cascade='all, delete-orphan')
-    in_messages = db.relationship('Message', foreign_keys=[Message.reader_id], back_populates='reader', cascade='all, delete-orphan')
+    messages = db.relationship('Message', back_populates='friendship', cascade='all, delete-orphan')
     
 class User(db.Model, UserMixin, SerializerMixin):
     __tablename__ = 'users'
@@ -45,7 +44,6 @@ class User(db.Model, UserMixin, SerializerMixin):
     owner = db.relationship('Owner', back_populates='user')
     req = association_proxy('friend_reqs', 'rec_user')
     rec = association_proxy('friend_recs', 'req_user')
-    # validate
     @validates('username')
     def validate_username(self, key, new_username):
         if not 3 <= len(new_username) <= 30:
@@ -82,7 +80,6 @@ class Owner(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates='owner', uselist=False)
     adoptions = db.relationship('Adoption', back_populates='owner', cascade='all, delete-orphan')
     pets = association_proxy('adoptions', 'pet')
-    # validate
     @validates('first_name', 'last_name')
     def validate_name(self, key, new_name):
         if not 1 <= len(new_name) <= 16:
@@ -112,7 +109,6 @@ class Pet(db.Model, SerializerMixin):
     adoptions = db.relationship('Adoption', back_populates='pet', cascade='all, delete-orphan')
     strain = db.relationship('Strain', back_populates='pets')
     owners = association_proxy('adoptions', 'owner')
-    # validate
     @validates('name')
     def validate_name(self, key, new_name):
         if not 1 <= len(new_name) <= 16:
@@ -147,7 +143,6 @@ class Action(db.Model, SerializerMixin):
         return f"<>"
     serialize_rules = ('-adoption', )
     adoption = db.relationship('Adoption', back_populates='actions')
-    # validate
     @validates('name')
     def validate_name(self, key, new_name):
         if not 1 <= len(new_name) <= 40:
@@ -170,7 +165,6 @@ class Stat(db.Model, SerializerMixin):
         return f"<stat: (happiness){self.happiness} (health){self.hunger} (hunger){self.hunger}>"
     serialize_rules = ('-pet', )
     pet = db.relationship('Pet', back_populates='stat')
-    # validate: domain: [0, 100]
     @validates('happiness', 'health', 'hunger')
     def validate_stat(self, key, new_val):
         if not 0 <= int(new_val) <= 100:
@@ -186,7 +180,6 @@ class Strain(db.Model, SerializerMixin):
         return f"<Strain(name:{self.name}, emoji:{self.emoji})>"
     serialize_rules = ('-pets', )
     pets = db.relationship('Pet', back_populates='strain')
-    # validate
     @validates('name', 'emoji')
     def validate_info(self, key, new_info):
         if not 1 <= len(new_info) <= 80:

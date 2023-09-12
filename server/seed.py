@@ -1,7 +1,7 @@
 from random import randint, choice as rc
 from faker import Faker
 from app import db, app
-from models import User, Owner, Pet, Adoption, Action, Stat, Strain
+from models import User, Owner, Pet, Adoption, Action, Stat, Strain, Friendship, Message
 
 faker = Faker()
 
