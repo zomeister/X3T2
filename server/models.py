@@ -15,6 +15,8 @@ class Friendship(db.Model, SerializerMixin):
     serialize_rules = ( )
     def __repr__(self):
         return f"<Friendship()>"
+    req_user = db.relationship('User', back_populates='friend_reqs')
+    rec_user = db.relationship('User', back_populates='friend_recs')
     
 class User(db.Model, UserMixin, SerializerMixin):
     __tablename__ = 'users'
@@ -25,8 +27,8 @@ class User(db.Model, UserMixin, SerializerMixin):
     def __repr__(self):
         return f"<User(name:{self.username}, email:{self.email})>"
     serialize_rules = ( )
-    friend_reqs = db.relationship('Friendship', foreign_keys=[Friendship.req_user_id], backref='req_user', cascade='all, delete-orphan')
-    friend_recs = db.relationship('Friendship', foreign_keys=[Friendship.rec_user_id], backref='rec_user', cascade='all, delete-orphan')
+    friend_reqs = db.relationship('Friendship', foreign_keys=[Friendship.req_user_id], back_populates='req_user', cascade='all, delete-orphan')
+    friend_recs = db.relationship('Friendship', foreign_keys=[Friendship.rec_user_id], back_populates='rec_user', cascade='all, delete-orphan')
     owner = db.relationship('Owner', back_populates='user')
     req = association_proxy('friend_reqs', 'rec_user')
     rec = association_proxy('friend_recs', 'req_user')
