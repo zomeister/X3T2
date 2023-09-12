@@ -5,18 +5,31 @@ from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.associationproxy import association_proxy
 from config import db, bcrypt
-
+class Message(db.Model, SerializerMixin):
+    __tablename__ ='messages'
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String)
+    status = db.Column(db.String)
+    friendship_id = db.Column(db.Integer, db.ForeignKey('friendships.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    reader_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    serialize_rules = ( )
+    def __repr__(self):
+        return f"<Message(status: {self.status}, message: {self.message})>"
+    author = db.relationship('User', back_populates='messages')
+    reader = db.relationship('User', back_populates='messages')
+    
 class Friendship(db.Model, SerializerMixin):
     __tablename__ = 'friendships'
     id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String)
     req_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     rec_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    status = db.Column(db.String)
     serialize_rules = ( )
     def __repr__(self):
         return f"<Friendship()>"
-    req_user = db.relationship('User', back_populates='friend_reqs')
-    rec_user = db.relationship('User', back_populates='friend_recs')
+    out_messages = db.relationship('Message', foreign_keys=[Message.author_id], back_populates='author', cascade='all, delete-orphan')
+    in_messages = db.relationship('Message', foreign_keys=[Message.reader_id], back_populates='reader', cascade='all, delete-orphan')
     
 class User(db.Model, UserMixin, SerializerMixin):
     __tablename__ = 'users'
@@ -53,7 +66,6 @@ class User(db.Model, UserMixin, SerializerMixin):
         self._password_hash = password_hash.decode('utf-8')
     def authenticate(self, password):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
-
 
 class Owner(db.Model, SerializerMixin):
     __tablename__ = 'owners'
