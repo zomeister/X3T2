@@ -12,21 +12,19 @@ class Friendship(db.Model, SerializerMixin):
     req_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     rec_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     status = db.Column(db.String)
+    serialize_rules = ( )
+    def __repr__(self):
+        return f"<Friendship()>"
     
 class User(db.Model, UserMixin, SerializerMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    # local columns
     username = db.Column(db.String, nullable=False, unique=True)
     email = db.Column(db.String, nullable=False, unique=True)
     _password_hash = db.Column(db.String)
-    # foreign keys
-    # serialize
-    serialize_rules = ( )
-    # represent
     def __repr__(self):
         return f"<User(name:{self.username}, email:{self.email})>"
-    # relate
+    serialize_rules = ( )
     friend_reqs = db.relationship('Friendship', foreign_keys=[Friendship.req_user_id], backref='req_user', cascade='all, delete-orphan')
     friend_recs = db.relationship('Friendship', foreign_keys=[Friendship.rec_user_id], backref='rec_user', cascade='all, delete-orphan')
     owner = db.relationship('Owner', back_populates='user')
@@ -47,35 +45,26 @@ class User(db.Model, UserMixin, SerializerMixin):
     @hybrid_property
     def password_hash(self):
         return self._password_hash
-        
     @password_hash.setter
     def password_hash(self, password):
         password_hash = bcrypt.generate_password_hash(password.encode('utf-8'))
         self._password_hash = password_hash.decode('utf-8')
-
     def authenticate(self, password):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
 
-    
 
 class Owner(db.Model, SerializerMixin):
     __tablename__ = 'owners'
     id = db.Column(db.Integer, primary_key=True)
-    # local columns
     first_name = db.Column(db.String, nullable=False)
     last_name = db.Column(db.String, nullable=False)
-    # username = db.Column(db.String, unique=True)
     profile_url = db.Column(db.String)
     city = db.Column(db.String)
     bio = db.Column(db.String)
-    # foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    # serialize
-    serialize_rules = ('-user', '-adoptions.owner', )
-    # represent
     def __repr__(self):
         return f"<Owner(username:{self.username}, name: {self.first_name} {self.last_name}, loc:{self.city}, bio{self.bio})>"
-    # relate
+    serialize_rules = ('-user', '-adoptions.owner', )
     user = db.relationship('User', back_populates='owner', uselist=False)
     adoptions = db.relationship('Adoption', back_populates='owner', cascade='all, delete-orphan')
     pets = association_proxy('adoptions', 'pet')
@@ -99,20 +88,15 @@ class Owner(db.Model, SerializerMixin):
 class Pet(db.Model, SerializerMixin):
     __tablename__ = 'pets'
     id = db.Column(db.Integer, primary_key=True)
-    # local columns
     name = db.Column(db.String, nullable=False)
     factor = db.Column(db.Integer, nullable=False, default=100)
-    # foreign keys
     strain_id = db.Column(db.Integer, db.ForeignKey('strains.id'))
-    # serialize
-    serialize_rules = ('-stat', '-strain.pets', '-adoptions.pet', )
-    # represent
     def __repr__(self):
         return f"<Pet(name:{self.name}, factor:{self.factor})>"
-    # relate
+    serialize_rules = ('-stat', '-strain.pets', '-adoptions.pet', )
     stat = db.relationship('Stat', back_populates='pet', uselist=False)
-    strain = db.relationship('Strain', back_populates='pets')
     adoptions = db.relationship('Adoption', back_populates='pet', cascade='all, delete-orphan')
+    strain = db.relationship('Strain', back_populates='pets')
     owners = association_proxy('adoptions', 'owner')
     # validate
     @validates('name')
@@ -129,36 +113,25 @@ class Pet(db.Model, SerializerMixin):
 class Adoption(db.Model, SerializerMixin):
     __tablename__ = 'adoptions'
     id = db.Column(db.Integer, primary_key=True)
-    # local columns
     username = db.Column(db.String)
-    # foreign keys
     owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
     pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'))
-    # serialize
-    serialize_rules = ('-actions.adoption', '-owner.adoptions', '-pet.adoptions', )
-    # represent
     def __repr__(self):
         return f"<>"
-    # relate
+    serialize_rules = ('-actions.adoption', '-owner.adoptions', '-pet.adoptions', )
     actions = db.relationship('Action', back_populates='adoption')
     owner = db.relationship('Owner', back_populates='adoptions')
     pet = db.relationship('Pet', back_populates='adoptions')
-    # validate
     
 class Action(db.Model, SerializerMixin):
     __tablename__ = 'actions'
     id = db.Column(db.Integer, primary_key=True)
-    # local columns
     name = db.Column(db.String, nullable=False)
     image_url = db.Column(db.String)
-    # foreign keys
     adoption_id = db.Column(db.Integer, db.ForeignKey('adoptions.id'))
-    # serialize
-    serialize_rules = ('-adoption', )
-    # represent
     def __repr__(self):
         return f"<>"
-    # relate
+    serialize_rules = ('-adoption', )
     adoption = db.relationship('Adoption', back_populates='actions')
     # validate
     @validates('name')
@@ -175,18 +148,13 @@ class Action(db.Model, SerializerMixin):
 class Stat(db.Model, SerializerMixin):
     __tablename__ = 'stats'
     id = db.Column(db.Integer, primary_key=True)
-    # local columns
     happiness = db.Column(db.Integer, nullable=False, default=100)
     health = db.Column(db.Integer, nullable=False, default=100)
     hunger = db.Column(db.Integer, nullable=False, default=100)
-    # foreign keys
     pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'))
-    # serialize
-    serialize_rules = ('-pet', )
-    # represent
     def __repr__(self):
         return f"<stat: (happiness){self.happiness} (health){self.hunger} (hunger){self.hunger}>"
-    # relate
+    serialize_rules = ('-pet', )
     pet = db.relationship('Pet', back_populates='stat')
     # validate: domain: [0, 100]
     @validates('happiness', 'health', 'hunger')
@@ -198,16 +166,11 @@ class Stat(db.Model, SerializerMixin):
 class Strain(db.Model, SerializerMixin):
     __tablename__ = 'strains'
     id = db.Column(db.Integer, primary_key=True)
-    # local columns
     name = db.Column(db.String, nullable=False, unique=True)
     emoji = db.Column(db.String, nullable=False)
-    # foreign keys
-    # serialize
-    serialize_rules = ('-pets', )
-    # represent
     def __repr__(self):
         return f"<Strain(name:{self.name}, emoji:{self.emoji})>"
-    # relate
+    serialize_rules = ('-pets', )
     pets = db.relationship('Pet', back_populates='strain')
     # validate
     @validates('name', 'emoji')
