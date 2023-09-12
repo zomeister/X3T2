@@ -65,6 +65,7 @@ class Owner(db.Model, SerializerMixin):
     # relate
     user = db.relationship('User', back_populates='owner', uselist=False)
     adoptions = db.relationship('Adoption', back_populates='owner', cascade='all, delete-orphan')
+    pets = association_proxy('adoptions', 'pet')
     # validate
     @validates('first_name', 'last_name')
     def validate_name(self, key, new_name):
@@ -99,6 +100,7 @@ class Pet(db.Model, SerializerMixin):
     stat = db.relationship('Stat', back_populates='pet', uselist=False)
     strain = db.relationship('Strain', back_populates='pets')
     adoptions = db.relationship('Adoption', back_populates='pet', cascade='all, delete-orphan')
+    owners = association_proxy('adoptions', 'owner')
     # validate
     @validates('name')
     def validate_name(self, key, new_name):

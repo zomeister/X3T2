@@ -91,7 +91,7 @@ def create_pets(strains):
 
 def create_adoptions(owners, pets, quantity=12):
     with app.app_context():
-        adoptions = [Adoption(owner_id=rc(range(len(owners))), pet_id=rc(range(len(pets)))) for _ in range(quantity) ]
+        adoptions = [Adoption(owner_id=rc(range(len(owners)))+1, pet_id=rc(range(len(pets)))+1) for _ in range(quantity) ]
         db.session.add_all(adoptions)
         db.session.commit()
         return adoptions
