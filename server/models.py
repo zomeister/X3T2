@@ -111,13 +111,14 @@ class User(db.Model, UserMixin, SerializerMixin):
         if not 200 >= len(new_email) >= 4 and '@' in new_email and '.' in new_email:
             raise ValueError('len(email):[4,200], email must include @ and . characters')
         return new_email
+    owner = db.relationship('Owner', backref='user', uselist=False)
     friend_reqs = db.relationship('Friendship', foreign_keys=[Friendship.req_user_id], backref='req_user', cascade='all, delete-orphan')
     friend_recs = db.relationship('Friendship', foreign_keys=[Friendship.rec_user_id], backref='rec_user', cascade='all, delete-orphan')
     threads = db.relationship('Thread', backref='user', lazy='dynamic')
     messages = db.relationship('Message', backref='author', lazy='dynamic')
     posts = db.relationship('Post', backref='author', lazy='dynamic')
-    req = association_proxy('friend_reqs', 'rec_user')
-    rec = association_proxy('friend_recs', 'req_user')
+    reqs = association_proxy('friend_reqs', 'rec_user')
+    recs = association_proxy('friend_recs', 'req_user')
     serialize_rules = ('-friend_reqs', '-friend_recs', '-posts.author', '-owner.user', )
     def __repr__(self):
         return f"<User(name:{self.username}, email:{self.email})>"
@@ -151,7 +152,6 @@ class Owner(db.Model, SerializerMixin):
         if not 1 <= len(new_profile_url) <= 2800:
             raise ValueError('len(profile_url):[1,2800]')
         return new_profile_url
-    user = db.relationship('User', backref='owner', uselist=False)
     adoptions = db.relationship('Adoption', backref='owner', cascade='all, delete-orphan')
     pets = association_proxy('adoptions', 'pet')
     serialize_rules = ('-user.owner', '-adoptions.owner', )
