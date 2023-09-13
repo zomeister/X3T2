@@ -1,6 +1,7 @@
 from random import randint, choice as rc
 from faker import Faker
 from app import db, app
+from models import Message, Thread, Post, Friendship, Menu
 from models import User, Owner, Pet, Adoption, Action, Stat, Strain
 
 faker = Faker()
@@ -9,6 +10,7 @@ def delete_records():
     with app.app_context():
         Owner.query.delete()
         Pet.query.delete()
+        Stat.query.delete()
         Adoption.query.delete()
         Action.query.delete()
         db.session.commit()
