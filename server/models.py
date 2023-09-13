@@ -37,7 +37,7 @@ class Thread(db.Model, SerializerMixin):
     def validate_subject(self, key, new_subject):
         if not 1 <= len(new_subject) <= 80:
             return ValueError('len(subject):[1,80]')
-    friendship = db.relationship('Friendship', back_populates='thread', uselist=False)
+    friendship = db.relationship('Friendship', backref='thread', uselist=False)
     messages = db.relationship('Message', backref='thread', lazy='dynamic')
     serialize_rules = ( )
     def __repr__(self):
@@ -82,7 +82,6 @@ class Friendship(db.Model, SerializerMixin):
         if not 1 <= len(new_status) <= 100:
             raise ValueError('len(status):[1,100]')
         return new_status
-    thread = db.relationship('Thread', back_populates='friendship')
     serialize_rules = ( '-req_user', '-rec_user', )
     def __repr__(self):
         return f"<Friendship()>"
@@ -117,7 +116,6 @@ class User(db.Model, UserMixin, SerializerMixin):
     threads = db.relationship('Thread', backref='user', lazy='dynamic')
     messages = db.relationship('Message', backref='author', lazy='dynamic')
     posts = db.relationship('Post', backref='author', lazy='dynamic')
-    owner = db.relationship('Owner', back_populates='user')
     req = association_proxy('friend_reqs', 'rec_user')
     rec = association_proxy('friend_recs', 'req_user')
     serialize_rules = ('-friend_reqs', '-friend_recs', '-posts.author', '-owner.user', )
@@ -153,8 +151,8 @@ class Owner(db.Model, SerializerMixin):
         if not 1 <= len(new_profile_url) <= 2800:
             raise ValueError('len(profile_url):[1,2800]')
         return new_profile_url
-    user = db.relationship('User', back_populates='owner', uselist=False)
-    adoptions = db.relationship('Adoption', back_populates='owner', cascade='all, delete-orphan')
+    user = db.relationship('User', backref='owner', uselist=False)
+    adoptions = db.relationship('Adoption', backref='owner', cascade='all, delete-orphan')
     pets = association_proxy('adoptions', 'pet')
     serialize_rules = ('-user.owner', '-adoptions.owner', )
     def __repr__(self):
@@ -172,8 +170,7 @@ class Stat(db.Model, SerializerMixin):
         if not 0 <= int(new_val) <= 100:
             raise ValueError('petstats:[0,100]')
         return new_val
-    pet = db.relationship('Pet', back_populates='stat', uselist=False)
-    serialize_rules = ('-pet', )
+    serialize_rules = ( )
     def __repr__(self):
         return f"<stat: (happiness){self.happiness} (health){self.hunger} (hunger){self.hunger}>"
 
@@ -193,9 +190,9 @@ class Pet(db.Model, SerializerMixin):
         if not 1 <= int(new_factor) <= 100:
             raise ValueError('factor:[1,100]')
         return new_factor
-    stat = db.relationship('Stat', back_populates='pet', uselist=False, cascade='all, delete-orphan')
-    adoptions = db.relationship('Adoption', back_populates='pet', cascade='all, delete-orphan')
-    strain = db.relationship('Strain', back_populates='pets')
+    strain = db.relationship('Strain', backref='pets', uselist=False)
+    stat = db.relationship('Stat', backref='pet', uselist=False)
+    adoptions = db.relationship('Adoption', backref='pet', cascade='all, delete-orphan')
     owners = association_proxy('adoptions', 'owner')
     serialize_rules = ('-stat', '-strain.pets', '-adoptions.pet', )
     def __repr__(self):
@@ -206,9 +203,7 @@ class Adoption(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
     pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'))
-    actions = db.relationship('Action', back_populates='adoption')
-    owner = db.relationship('Owner', back_populates='adoptions')
-    pet = db.relationship('Pet', back_populates='adoptions')
+    actions = db.relationship('Action', backref='adoption', cascade='all, delete-orphan')
     serialize_rules = ('-actions.adoption', '-owner.adoptions', '-pet.adoptions', )
     def __repr__(self):
         return f"<>"
@@ -230,8 +225,6 @@ class Action(db.Model, SerializerMixin):
         if not 1 <= len(new_image_url) <= 2800:
             raise ValueError('len(image_url):[1,2800]')
         return new_image_url
-    adoption = db.relationship('Adoption', back_populates='actions')
-    menu = db.relationship('Menu', back_populates='actions')
     serialize_rules = ('-adoption', '-menu.actions', )
     def __repr__(self):
         return f"<Action(name: {self.name})>"
@@ -246,7 +239,7 @@ class Menu(db.Model, SerializerMixin):
         if not 1 <= len(new_info) <= 80:
             raise ValueError('len(info):[1,80]')
         return new_info
-    actions = db.relationship('Action', back_populates='menu', cascade='all, delete-orphan')
+    actions = db.relationship('Action', backref='menu', cascade='all, delete-orphan')
     serialize_rules = ('-actions.menu', '-actions.adoption', )
     def __repr__(self):
         return f"<Menu(name:{self.name}, emoji:{self.emoji})>"
@@ -261,8 +254,7 @@ class Strain(db.Model, SerializerMixin):
         if not 1 <= len(new_info) <= 80:
             raise ValueError('len(info):[1,80]')
         return new_info
-    pets = db.relationship('Pet', back_populates='strain')
-    serialize_rules = ('-pets', )
+    serialize_rules = ( )
     def __repr__(self):
         return f"<Strain(name:{self.name}, emoji:{self.emoji})>"
     
