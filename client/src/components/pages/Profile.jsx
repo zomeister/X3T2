@@ -2,8 +2,10 @@ import { useState, useContext } from "react"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import * as yup from "yup"
 
+import { UserContext } from "../../contexts/UserContext"
 
 export default function Profile() {
+    const { user } = useContext(UserContext)
 
     const handleCreateProfile = (values) => {
         fetch('/api/profile', {
@@ -12,7 +14,7 @@ export default function Profile() {
             body: JSON.stringify({ ...values, })
         })
         .then(res => res.json())
-        .then(data => console.log(data))
+        .then(ownerData => console.log(ownerData))
         .catch(err => console.error(err))
     }
     

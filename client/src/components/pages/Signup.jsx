@@ -2,8 +2,10 @@ import { useState, useContext } from "react"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import * as yup from "yup"
 
+import { UserContext } from "../../contexts/UserContext"
 
 export default function Signup() {
+    const { setUser } = useContext(UserContext)
 
     const handleSubmitSignup = (values) => {
         fetch('/api/signup', {
@@ -12,7 +14,7 @@ export default function Signup() {
             body: JSON.stringify({ ...values, })
         })
         .then(res => res.json())
-        .then(data => console.log(data))
+        .then(userData => console.log(userData))
         .catch(err => console.error(err))
     }
     
