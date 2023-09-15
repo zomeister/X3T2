@@ -1,4 +1,4 @@
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import * as yup from "yup"
 
@@ -6,9 +6,10 @@ import { UserContext } from "../../contexts/UserContext"
 
 export default function Profile() {
     const { user } = useContext(UserContext)
+    const [username, setUsername] = useState(user.username)
 
     const handleCreateProfile = (values) => {
-        fetch('/api/profile', {
+        fetch(`/api/owners`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ ...values, })
@@ -17,7 +18,26 @@ export default function Profile() {
         .then(ownerData => console.log(ownerData))
         .catch(err => console.error(err))
     }
-    
+    const handleViewProfile = () => {
+        fetch(`/api/${username}/owner`)
+        .then(res => res.json())
+        .then(ownerData => console.log(ownerData))
+        .catch(err => console.error(err))
+    }
+    const handleEditProfile = (values) => {
+        fetch(`/api/${username}/owner`, {
+            method: 'PATCH',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({...values, })
+        })
+        .then(res => res.json())
+        .then(ownerData => console.log(ownerData))
+        .catch(err => console.error(err))
+    }
+    useEffect(() => {
+        handleViewProfile()
+    }, [])
+
     return (<div>
         <div className="profile-display">
             <h1>Profile</h1>
@@ -33,9 +53,9 @@ export default function Profile() {
                     profile_url: ""
                 }}
                 validationSchema={yup.object().shape({
-                    firstName: yup.string().min(1).max().required("First name is required."),
-                    lastName: yup.string().min(1).max().required("Last name is required."),
-                    city: yup.string().min(1).max(120, "City name too long.").required("City is required."),
+                    firstName: yup.string().min(1).max().required("first name required"),
+                    lastName: yup.string().min(1).max().required("last name required"),
+                    city: yup.string().min(1).max(120, "City name too long.").required("city required"),
                     bio: yup.string().min(1).max(4000, "Bio too long."),
                     profile_url: yup.string().min(1).max(2800, "Profile URL too long.")
             })}>

@@ -3,5 +3,19 @@ import { useState, useContext, useEffect } from "react"
 import PetCard from "../PetCard"
 
 export default function Pound() {
-    return (<p>Pound</p>)
+    const [ shelterPets, setShelterPets ] = useState([])
+    
+    const poundPets = () => {
+        fetch('api/shelter')
+        .then(res => res.json())
+        .then(data => setShelterPets(data))
+    }
+
+    useEffect(() => {
+        poundPets()
+    },[])
+
+    return (<>
+        {shelterPets.map(p => <PetCard key={p.id} pet={p}/>)}
+    </>)
 }
