@@ -1,1 +1,0 @@
-import OwnerCard from "../OwnerCard"

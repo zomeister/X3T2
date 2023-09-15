@@ -8,6 +8,7 @@ export default function Header () {
     return(
         <header>Header
             <Link to="/">Home</Link>
+            <Link to="/newowners">(newowners)</Link>
             <Link to="/pound">(pound)</Link>
             {user == null 
                 ? <>

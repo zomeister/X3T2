@@ -6,7 +6,10 @@ export default function Pound() {
     const [ shelterPets, setShelterPets ] = useState([])
     
     const poundPets = () => {
-        fetch('api/shelter')
+        fetch('api/shelter', {
+            method: 'GET',
+            headers: { 'content-type': 'application/json' },
+        })
         .then(res => res.json())
         .then(data => setShelterPets(data))
     }

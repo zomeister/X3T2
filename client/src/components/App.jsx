@@ -4,6 +4,7 @@ import appLogo from './../assets/logo.svg'
 import '../styles/App.css'
 import { UserProvider } from '../contexts/UserContext'
 
+import NewOwners from './pages/NewOwners'
 import Pound from './pages/Pound'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -47,6 +48,7 @@ function App() {
           Click on the Vite and React logos to learn more
         </p>
         <Routes>
+          <Route path="/newowners" element={<NewOwners />} />
           <Route path="/pound" element={<Pound />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

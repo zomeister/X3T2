@@ -19,7 +19,10 @@ export default function Profile() {
         .catch(err => console.error(err))
     }
     const handleViewProfile = () => {
-        fetch(`/api/${username}/owner`)
+        fetch(`/api/${username}/owner`, {
+            method: 'GET',
+            headers: { 'content-type': 'application/json' },
+        })
         .then(res => res.json())
         .then(ownerData => console.log(ownerData))
         .catch(err => console.error(err))

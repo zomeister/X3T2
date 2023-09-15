@@ -7,12 +7,15 @@ export default function MyPets() {
     const [username, setUsername] = useState(user.username)
     const [pets, setPets] = useState([])
     const myPets = () => {
-        fetch(`${username}/pets`)
+        fetch(`${username}/pets`, {
+            method: 'GET',
+            headers: { 'content-type': 'application/json' },
+        })
         .then(res => res.json())
         .then(data => setPets(data))
         .catch(err => console.log(err))
     }
-    
+
     useEffect(() => {
         myPets()
     }, [])
