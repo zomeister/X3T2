@@ -48,7 +48,7 @@ def seed_strains():
         db.session.commit()
         return strains
 
-def create_owners(users):
+def create_owners():
     first_names = [faker.first_name() for _ in range(18)] + [
         'John', 'Jane', 'Jill', 'Joe', 'Jim', 'Jenny',
     ]
@@ -106,7 +106,6 @@ def create_actions(adoptions):
         db.session.commit()
         return actions
 
-
 def relate_users_and_owners(users, owners):
     with app.app_context():
         for user in users:
@@ -118,7 +117,7 @@ if __name__ == '__main__':
         delete_records()
         print("seeding...")
         users = seed_users()
-        owners = create_owners(users)
+        owners = create_owners()
         # users, owners = relate_users_and_owners(users, owners)
         strains = seed_strains()
         pets = create_pets(strains)

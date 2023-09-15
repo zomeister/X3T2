@@ -3,6 +3,13 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import appLogo from './../assets/logo.svg'
 import '../styles/App.css'
 
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+
+import Header from './Header'
+import Footer from './Footer'
+
+
 import reactLogo from './../assets/react.svg'
 import viteLogo from '/vite.svg'
 
@@ -11,6 +18,7 @@ function App() {
 
   return (
     <>
+      <Header />
       <div>
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
@@ -31,6 +39,13 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+      <Routes>
+        {/* <Route exact path="/" element={<Home />} />
+        <Route path="/about" element={<About />} /> */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+      <Footer />
     </>
   )
 }

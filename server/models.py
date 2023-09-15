@@ -119,7 +119,7 @@ class User(db.Model, UserMixin, SerializerMixin):
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     reqs = association_proxy('friend_reqs', 'rec_user')
     recs = association_proxy('friend_recs', 'req_user')
-    serialize_rules = ('-friend_reqs', '-friend_recs', '-posts.author', '-owner.user', )
+    serialize_rules = ('-friend_reqs', '-friend_recs', '-posts.author', '-owner.user', '-owner.adoptions', )
     def __repr__(self):
         return f"<User(name:{self.username}, email:{self.email})>"
 
@@ -154,7 +154,7 @@ class Owner(db.Model, SerializerMixin):
         return new_profile_url
     adoptions = db.relationship('Adoption', backref='owner', cascade='all, delete-orphan')
     pets = association_proxy('adoptions', 'pet')
-    serialize_rules = ('-user.owner', '-adoptions.owner', )
+    serialize_rules = ('-user', '-adoptions.owner', '-adoptions.pet', '-adoptions.actions')
     def __repr__(self):
         return f"<Owner(username:{self.username}, name: {self.first_name} {self.last_name}, loc:{self.city}, bio{self.bio})>"
 
@@ -170,7 +170,7 @@ class Stat(db.Model, SerializerMixin):
         if not 0 <= int(new_val) <= 100:
             raise ValueError('petstats:[0,100]')
         return new_val
-    serialize_rules = ( )
+    serialize_rules = ('-pet', )
     def __repr__(self):
         return f"<stat: (happiness){self.happiness} (health){self.hunger} (hunger){self.hunger}>"
 
@@ -194,7 +194,7 @@ class Pet(db.Model, SerializerMixin):
     stat = db.relationship('Stat', backref='pet', uselist=False)
     adoptions = db.relationship('Adoption', backref='pet', cascade='all, delete-orphan')
     owners = association_proxy('adoptions', 'owner')
-    serialize_rules = ('-stat', '-strain.pets', '-adoptions.pet', )
+    serialize_rules = ('-stat', '-strain.pets', '-adoptions.pet', '-adoptions.owner', )
     def __repr__(self):
         return f"<Pet(name:{self.name}, factor:{self.factor})>"
 
@@ -204,7 +204,7 @@ class Adoption(db.Model, SerializerMixin):
     owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
     pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'))
     actions = db.relationship('Action', backref='adoption', cascade='all, delete-orphan')
-    serialize_rules = ('-actions.adoption', '-owner.adoptions', '-pet.adoptions', )
+    serialize_rules = ('-actions.adoption', '-owner', '-pet', '-actions.adoption_id', )
     def __repr__(self):
         return f"<>"
     
