@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react"
 // import { UserContext } from "../../contexts/userContext"
 import PetCard from "../PetCard"
 
-export default function Pound() {
+export default function Shelter() {
     const [ shelterPets, setShelterPets ] = useState([])
     
     const poundPets = () => {

@@ -4,11 +4,11 @@ import * as yup from "yup"
 
 import { UserContext } from "../../contexts/UserContext"
 
-export default function Signup() {
+export default function Register() {
     const { setUser } = useContext(UserContext)
 
-    const handleSubmitSignup = (values) => {
-        fetch('/api/signup', {
+    const handleRegister = (values) => {
+        fetch('/api/register', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ ...values, })
@@ -20,7 +20,7 @@ export default function Signup() {
     
     return (<div>
         <h1>Signup</h1>
-        <Formik onSubmit={handleSubmitSignup}
+        <Formik onSubmit={handleRegister}
             initialValues={{
                 email: "",
                 username: "",

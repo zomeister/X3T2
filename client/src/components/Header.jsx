@@ -9,16 +9,17 @@ export default function Header () {
         <header>Header
             <Link to="/">Home</Link>
             <Link to="/newowners">(newowners)</Link>
-            <Link to="/pound">(pound)</Link>
+            <Link to="/shelter">(pound)</Link>
             {user == null 
                 ? <>
                     <Link to="/login">Login</Link>
-                    <Link to="/signup">Signup</Link>
+                    <Link to="/register">Register</Link>
                 </> 
                 : <>
                     <Link to="/profile">Profile</Link>
                     <Link to="/mypets">My Pets</Link>
                     <Link to="/myfriends">My Friends</Link>
+                    <Link to="/mythreads">My Conversations</Link>
                     <Link to="/logout">Logout</Link>
                 </>
             }

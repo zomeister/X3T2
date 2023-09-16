@@ -82,7 +82,7 @@ class Friendship(db.Model, SerializerMixin):
         if not 1 <= len(new_status) <= 100:
             raise ValueError('len(status):[1,100]')
         return new_status
-    serialize_rules = ( '-req_user', '-rec_user', )
+    serialize_rules = ( )
     def __repr__(self):
         return f"<Friendship()>"
     

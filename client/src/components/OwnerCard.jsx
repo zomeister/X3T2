@@ -1,8 +1,9 @@
+import {useState} from "react"
 import { Card } from "react-bootstrap"
 
 export default function OwnerCard({owner}) {
-    console.log(owner)
+    const {first_name, last_name, profile_url, city, bio} = owner
     return (<div>
-        base OwnerCard
+        {first_name} {last_name}
     </div>)
 }
