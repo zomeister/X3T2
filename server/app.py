@@ -79,7 +79,7 @@ class Shelter(Resource):
                 factor=petData['factor'],
                 strain_id=petData['strain_id'],
             )
-            db.session.add(new_pet)
+             db.session.add(new_pet)
             db.session.commit()
             return make_response(new_pet.to_dict(), 201)
         except Exception as e:
