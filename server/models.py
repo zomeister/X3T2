@@ -194,7 +194,7 @@ class Pet(db.Model, SerializerMixin):
     stat = db.relationship('Stat', backref='pet', uselist=False)
     adoptions = db.relationship('Adoption', backref='pet', cascade='all, delete-orphan')
     owners = association_proxy('adoptions', 'owner')
-    serialize_rules = ('-stat', '-strain.pets', '-adoptions.pet', '-adoptions.owner', )
+    serialize_rules = ('-strain.pets', '-adoptions.pet', '-adoptions.owner', )
     def __repr__(self):
         return f"<Pet(name:{self.name}, factor:{self.factor})>"
 

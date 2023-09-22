@@ -134,8 +134,8 @@ class MyPetsStats(Resource):
             return make_response(my_petstats, 200)
 api.add_resource(MyPetsStats, '/<string:username>/pets/stats')
 class MyPetStats(Resource):
-    def get(self, id, username):
-        user = User.query.filter_by(username=username).first()
+    def get(self, id):
+        user = current_user
         my_adoption = Adoption.query.filter((Adoption.owner_id==user.id) & (Adoption.pet_id==id)).first()
         if not user:
             return make_response({"error": "user not found"}, 404)
@@ -143,8 +143,8 @@ class MyPetStats(Resource):
             return make_response({"error": "adoption not found"}, 404)
         else:
             return make_response(my_adoption.pet.stat.to_dict(), 200)
-    def patch(self, pet_id):
-        stat = Stat.query.filter_by(pet_id=pet_id).first()
+    def patch(self, id):
+        stat = Stat.query.filter_by(pet_id=id).first()
         statData = request.get_json()
         if not stat:
             return make_response({'error':'stat not found'}, 404)
@@ -158,7 +158,7 @@ class MyPetStats(Resource):
                 return make_response(stat.to_dict(), 202)
             except Exception as e:
                 return make_response({'error': str(e)}, 500)
-api.add_resource(MyPetStats, '/<string:username>/pets/<int:id>/stats')
+api.add_resource(MyPetStats, '/pets/stats/<int:id>')
 
 class Profile(Resource):
     def get(self):
