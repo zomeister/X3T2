@@ -1,8 +1,10 @@
 import { useState, useContext } from "react"
+import { Navigate } from "react-router-dom"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import * as yup from "yup"
 
 import { UserContext } from "../../contexts/UserContext"
+import "../../styles/Form.css"
 
 export default function Signup() {
     const { setUser } = useContext(UserContext)
@@ -18,7 +20,7 @@ export default function Signup() {
         .catch(err => console.error(err))
     }
     
-    return (<div>
+    return (<div className="input-container">
         <h1>Signup</h1>
         <Formik onSubmit={handleSubmitSignup}
             initialValues={{
@@ -31,23 +33,25 @@ export default function Signup() {
                 username: yup.string().min(3).max(40).required("username required"),
                 password: yup.string().required("password required")
             })}>
-            <Form>
+            <Form className="input-group">
                 <div className="form-group">
                     <label htmlFor="email">Email</label>
                     <Field type="email" name="email" id="email" className="form-control" />
-                    <ErrorMessage name="email" component="div" />
                 </div>
                 <div className="form-group">
                     <label htmlFor="username">Username</label>
                     <Field type="username" name="username" id="username" className="form-control" />
-                    <ErrorMessage name="username" component="div" />
                 </div>
                 <div className="form-group">
                     <label htmlFor="password">Password</label>
                     <Field type="password" name="password" id="password" className="form-control" />
-                    <ErrorMessage name="password" component="div" />
                 </div>
                 <button type="submit" className="btn btn-primary">Submit</button>
+                <div className="error-group">
+                    <ErrorMessage name="email" component="div" />
+                    <ErrorMessage name="username" component="div" />
+                    <ErrorMessage name="password" component="div" />
+                </div>
             </Form>
         </Formik>
     </div>

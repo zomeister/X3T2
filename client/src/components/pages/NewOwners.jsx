@@ -18,6 +18,6 @@ export default function NewOwners() {
     },[])
 
     return (<>
-        {newOwners.map(o => <OwnerCard key={o.id} owner={o}/>)}
+        {newOwners.map(o => <OwnerCard key={o.id} owner={o} pageName="newowners"/>)}
     </>)
 }

@@ -2,12 +2,12 @@ import { useState, useContext, useEffect } from "react"
 import { UserContext } from "../../contexts/UserContext"
 import PetCard from "../PetCard"
 
-export default function MyPets() {
+export default function MyPets({handleAdoption, handleUnadoption}) {
     const { user } = useContext(UserContext)
-    const [username, setUsername] = useState(user.username)
+    // const [username, setUsername] = useState(user.username)
     const [pets, setPets] = useState([])
-    const myPets = () => {
-        fetch(`${username}/pets`, {
+    function myPets () {
+        fetch(`/api/mypets`, {
             method: 'GET',
             headers: { 'content-type': 'application/json' },
         })
@@ -21,7 +21,7 @@ export default function MyPets() {
     }, [])
 
     return (<>
-        MyPets
-        {pets.map(p => <PetCard key={p.id} pet={p} />)}
+        <h1>My Pets</h1>
+        {pets.map(p => <PetCard key={p.id} pet={p} pageName="mypets" isAdopted={true} />)}
     </>)
 }

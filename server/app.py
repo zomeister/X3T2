@@ -1,4 +1,4 @@
-from flask import session, request, make_response, jsonify, abort
+from flask import session, request, make_response, jsonify, abort, redirect
 from flask_restful import Resource
 from flask_login import login_user, logout_user, login_required, current_user
 from config import db, app, api, login_manager, Migrate
@@ -36,34 +36,34 @@ class Login(Resource):
         userData = request.get_json()
         if not userData:
             return make_response({"error": "invalid user data"}, 400)
-        username = userData['username']
+        identifier = userData['username']
         password = userData['password']
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter(User.email==identifier or User.username==identifier).first()
         if not user:
             return make_response({"error": "user not found"}, 404)
         elif user.authenticate(password):
-            # login_user(new_user, remember=True)
-            session['user_id'] = user.id
-            return make_response(user.to_dict(rules=('-_password_hash',)), 200)
+            login_user(user, remember=True)
+            return make_response(user.to_dict(), 200)
         else:
-            return make_response({"error": "invalid username or password"}, 401)
+            return make_response({"error": "unauthorized"}, 401)
 api.add_resource(Login, '/login')
 class Logout(Resource):
+    @login_required
     def delete(self):
         try:
-            # logout_user()
-            session['user_id'] = None
+            logout_user()
             return make_response({}, 204)
         except Exception as e:
             return {"error": str(e)}, 500
 api.add_resource(Logout, '/logout')
 class CheckSession(Resource):
     def get(self):
-        user = User.query.filter_by(id=session['user_id']).first()
-        if not user:
-            return make_response({"error": "user not in session"}, 404)
-        else:
-            return make_response(user.to_dict(), 200)
+        if current_user.is_authenticated:
+            user = current_user.to_dict()
+            return make_response(user, 200)
+        elif not user:
+            return make_response({"error": "user not authorized"}, 401)
+
 api.add_resource(CheckSession, '/check_session')
 
 class Shelter(Resource):
@@ -87,17 +87,35 @@ class Shelter(Resource):
             return make_response({'error': str(e)}, 500)
 api.add_resource(Shelter, '/shelter')
 class MyPets(Resource):
-    def get(self, username):
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return make_response({"error": "user not found"}, 404)
-        else:
-            my_pets = [a.pet.to_dict() for a in Adoption.query.filter(Adoption.owner_id==user.id).all()]
-            return make_response(my_pets, 200)
-api.add_resource(MyPets, '/<string:username>/pets')
+    @login_required
+    def get(self):
+        user = current_user
+        owner = Owner.query.filter_by(id=user.id).first()
+        if not user or not owner:
+            return make_response({"error": "user/owner not found"}, 404)
+        pets = [a.pet.to_dict() for a in Adoption.query.filter(Adoption.owner_id==user.id).all()]
+        return make_response(pets, 200)
+    # @login_required
+    # def post(self):
+    #     user = current_user
+    #     owner = Owner.query.filter_by(id=user.id).first()
+    #     petData = request.get_json()
+    #     if not user or not owner:
+    #         return make_response({"error": "user/owner not found"}, 404)
+    #     elif not petData:
+    #         return make_response({"error": "invalid pet data"}, 400)
+    #     else:
+    #         try:
+    #             new_adoption = Adoption()
+    #             db.session.add(new_adoption)
+    #             db.session.commit()
+    #             return make_response(new_adoption.to_dict(), 201)
+    #         except Exception as e:
+    #             return make_response({'error': str(e)}, 500)
+api.add_resource(MyPets, '/mypets')
 class MyPetsById(Resource):
-    def get(self, id, username):
-        user = User.query.filter_by(username=username).first()
+    def get(self, id):
+        user = current_user
         my_adoption = Adoption.query.filter((Adoption.owner_id==user.id) & (Adoption.pet_id==id)).first()
         if not user:
             return make_response({"error": "user not found"}, 404)
@@ -142,13 +160,77 @@ class MyPetStats(Resource):
                 return make_response({'error': str(e)}, 500)
 api.add_resource(MyPetStats, '/<string:username>/pets/<int:id>/stats')
 
-
+class Profile(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        if not user_id:
+            return make_response({"error": "user not in session"}, 404)
+        owner = Owner.query.filter_by(id=user_id).first()
+        if not owner:
+            return make_response({"error": "owner not created"}, 400)
+        else:
+            return make_response(owner.to_dict(), 200)
+    def post(self):
+        user_id = session.get('user_id')
+        if not user_id:
+            return make_response({"error": "user not in session"}, 404)
+        owner = Owner.query.filter_by(id=user_id).first()
+        ownerData = request.get_json()
+        if not owner:
+            return make_response({"error": "owner not found"}, 404)
+        elif not ownerData:
+            return make_response({"error": "invalid owner data"}, 400)
+        else:
+            try:
+                new_owner = Owner(user_id=ownerData['user_id'],
+					first_name=ownerData['first_name'],
+					last_name=ownerData['last_name'],
+					profile_url=ownerData['profile_url'],
+					city=ownerData['city'],
+					bio=ownerData['bio']
+				)
+                db.session.add(new_owner)
+                db.session.commit()
+                return make_response(new_owner.to_dict(), 201)
+            except Exception as e:
+                return make_response({'error': str(e)}, 500)
+api.add_resource(Profile, '/profile')
 
 class MyAdoptions(Resource):
     def get(self):
         pass
+    @login_required
     def post(self):
-        pass
+        user = current_user
+        owner = Owner.query.filter_by(id=user.id).first()
+        petData = request.get_json()
+        if not user or not owner:
+            return make_response({"error": "user/owner not found"}, 404)
+        elif not petData:
+            return make_response({"error": "invalid pet data"}, 400)
+        else:
+            try:
+                new_adoption = Adoption(owner_id=owner.id, pet_id=petData['pet_id'])
+                db.session.add(new_adoption)
+                db.session.commit()
+                return make_response(new_adoption.to_dict(), 201)
+            except Exception as e:
+                return make_response({'error': str(e)}, 500)
+    @login_required
+    def delete(self):
+        user = current_user
+        pet_id = request.get_json()['pet_id']
+        pet = Pet.query.filter_by(id=pet_id).first()
+        adoption = Adoption.query.filter(Adoption.owner_id==user.id and Adoption.pet_id==pet_id).first()
+        if not user or not pet or not adoption:
+            return make_response({"error": "user/owner or pet or adoption not found"}, 404)
+        else:
+            try:
+                db.session.delete(adoption)
+                db.session.commit()
+                return make_response({} , 204)
+            except Exception as e:
+                return make_response({'error': str(e)}, 500)
 api.add_resource(MyAdoptions, '/my_adoptions')
 class MyAdoptionsById(Resource):
     def get(self, id):

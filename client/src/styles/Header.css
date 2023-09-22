@@ -1,0 +1,61 @@
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 30px;
+    text-align: left;
+    width: 100%;
+    margin: 4px 0 10px 0;
+    padding: 0 0 15px 0;
+    background:#0b091f;
+    color:#0b091f;
+    font-family: 'Averia Serif Libre', cursive;
+}
+
+header a {
+    padding: 2px 6px 4px 8px;
+    border: 2px solid;
+    border-radius: 3px;
+    margin: 0px 6px 0px 0px;
+    border-color:#352156;
+    color: #7e57c2;
+}
+header a:hover {
+    filter: drop-shadow(0 0 1em #8b64ffaa);
+    background: #352156;
+    color: #b6c4d0;
+}
+
+
+#nav-links {
+    display: inline-block;
+    text-align: left;
+}
+#auth-links {
+    float: right;
+    margin: -4px 8px 0px 0px;
+    padding: 0 0 0 0;
+}
+#app-title {
+    /* font-family: 'Londrina Outline', cursive; */
+    /* font-weight: bolder; */
+    display: inline-block;
+    margin-top: 0px;
+    margin-bottom: 25px;
+    padding: 0px 12px;
+    text-align: left;
+    font-size: 1.5rem;
+    letter-spacing: 0.15rem;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: -8px 8px #ef3550,
+                 -4px 4px #f48fb1,
+                 4px -4px #7e57c2,
+                 8px -8px #2196f3,
+                 16
+                 px -16px #26c6da,
+                 20px -20px #43a047,
+                 24px -24px #eeff41,
+                 28px -28px #f9a825,
+                 32px -32px #ff5722;
+}

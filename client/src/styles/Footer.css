@@ -1,0 +1,72 @@
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 20px;
+    text-align: left;
+    width: 100%;
+    padding: 4px 0 0 0;
+    background:#080716;
+}
+footer a {
+    padding: 2px 6px 4px 8px;
+    border: 2px solid;
+    border-radius: 3px;
+    margin: 0px 6px 0px 0px;
+    border-color:#352156;
+    color: #7e57c2;
+}
+
+
+#nav-links {
+    display: inline-block;
+    text-align: left;
+}
+#auth-links {
+    float: right;
+    margin: -4px 8px 0px 0px;
+    padding: 0 0 0 0;
+}
+#app-title {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bolder;
+    display: inline-block;
+    margin-top: 0px;
+    margin-bottom: 25px;
+    padding: 0px 12px;
+    text-align: left;
+    font-size: 1.5rem;
+    letter-spacing: 0.15rem;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: -8px 8px #ef3550,
+                 -4px 4px #f48fb1,
+                 4px -4px #7e57c2,
+                 8px -8px #2196f3,
+                 16px -16px #26c6da,
+                 20px -20px #43a047,
+                 24px -24px #eeff41,
+                 28px -28px #f9a825,
+                 32px -32px #ff5722;
+}
+#app-footer {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bolder;
+    display: inline-block;
+    margin-top: 0px;
+    padding: 0px 12px;
+    text-align: left;
+    font-size: 0.5rem;
+    letter-spacing: 0.15rem;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 2px -2px #ef3550,
+                 1px -1px #f48fb1,
+                 -1px 1px #7e57c2,
+                 -2px 2px #2196f3,
+                 -4px 4px #26c6da,
+                 -5px 5px #43a047,
+                 -6px 6px #eeff41,
+                 -7px 7px #f9a825,
+                 -8px 8px #ff5722;
+}

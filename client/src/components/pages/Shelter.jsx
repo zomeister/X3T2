@@ -1,8 +1,10 @@
 import { useState, useContext, useEffect } from "react"
-// import { UserContext } from "../../contexts/userContext"
+import { UserContext } from "../../contexts/UserContext"
 import PetCard from "../PetCard"
+import AddPet from "../AddPet"
 
-export default function Pound() {
+export default function Shelter({handleAdoption, handleUnadoption}) {
+    const { user } = useContext(UserContext)
     const [ shelterPets, setShelterPets ] = useState([])
     
     const poundPets = () => {
@@ -19,6 +21,12 @@ export default function Pound() {
     },[])
 
     return (<>
-        {shelterPets.map(p => <PetCard key={p.id} pet={p}/>)}
+        <div className="card-container">
+            <h1>Shelter</h1>
+            {shelterPets.map(p => {return(
+                <PetCard key={p.id} pet={p} pageName="shelter" isAdopted={false} />
+            )})}
+            <AddPet />
+        </div>
     </>)
 }
